@@ -1,2 +1,2 @@
 #!/bin/sh
-docker buildx build --target=export --output=. .
+nerdctl build --target=export --output=. .

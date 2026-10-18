@@ -1,4 +1,4 @@
-FROM debian:buster-slim AS download
+FROM debian:bookworm-slim AS download
 
 RUN apt update && apt install -y wget
 WORKDIR /deb
@@ -22,9 +22,14 @@ COPY . /app
 FROM python:3.9.11-slim-bullseye
 MAINTAINER Alexander Puzynia <werwolf.by@gmail.com>
 
+# bullseye is archived: use archive.debian.org and tolerate expired Release files
+RUN echo "deb http://archive.debian.org/debian bullseye main" > /etc/apt/sources.list && \
+    echo "deb http://archive.debian.org/debian-security bullseye-security main" >> /etc/apt/sources.list && \
+    echo 'Acquire::Check-Valid-Until "false";' > /etc/apt/apt.conf.d/99no-check-valid-until
+
 # For docker layers caching it is better to install Playwight first with all dependencies
 COPY --from=download /deb /deb
-RUN apt update && apt install -y curl && \
+RUN apt-get update && apt-get install -y curl && \
     dpkg -i /deb/fonts-ubuntu_0.83-2_all.deb && \
     dpkg -i /deb/ttf-ubuntu-font-family_0.83-2_all.deb && \
     rm -rf /deb/*.deb && \
